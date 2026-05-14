@@ -17,7 +17,6 @@ public class EmployeeRequestDTO {
     private String  email;
     private String  password;         // raw password (will be hashed)
     private Integer departmentID;     //dropdown
-    private Integer designationID;    //dropdown
     private Integer roleID;           //dropdown
     private Integer managerID;        // nullable
     private String  status;

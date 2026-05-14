@@ -31,7 +31,7 @@ public class EmployeeResponseDTO {
 
     // Nested objects instead of raw IDs
     private DepartmentResponseDTO  department;
-    private DesignationResponseDTO designation;
+//    private DesignationResponseDTO designation;
     private RoleResponseDTO        role;
 
     // Manager info (simple, not full nested to avoid infinite loop)

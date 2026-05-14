@@ -16,7 +16,6 @@ import java.util.List;
                 @Index(name = "idx_employee_role",        columnList = "roleID"),
                 @Index(name = "idx_employee_department",  columnList = "departmentID"),
                 @Index(name = "idx_employee_manager",     columnList = "managerID"),
-                @Index(name = "idx_employee_designation", columnList = "designationID")
         }
 )
 @Data
@@ -47,37 +46,26 @@ public class Employee {
     @Column(name = "createdAt", updatable = false)
     private LocalDateTime createdAt;
 
-    // -------------------------------------------------------
     // Many employees belong to one department
-    // -------------------------------------------------------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departmentID", referencedColumnName = "departmentID")
     private Department department;
 
-    // -------------------------------------------------------
-    // Many employees have one designation
-    // -------------------------------------------------------
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "designationID", referencedColumnName = "designationID")
-    private Designation designation;
 
-    // -------------------------------------------------------
+
     // Many employees have one role
-    // -------------------------------------------------------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "roleID", referencedColumnName = "roleID")
     private Role role;
 
-    // -------------------------------------------------------
     // Self-referencing: Many employees report to one manager
-    // -------------------------------------------------------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "managerID", referencedColumnName = "employeeID")
     private Employee manager;
 
     // One manager has many subordinates
-    @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
-    private List<Employee> subordinates;
+//    @OneToMany(mappedBy = "manager", fetch = FetchType.LAZY)
+//    private List<Employee> subordinates;
 
     // -------------------------------------------------------
     // One employee has many travel requests

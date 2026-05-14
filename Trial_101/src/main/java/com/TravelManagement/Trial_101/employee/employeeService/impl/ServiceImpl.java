@@ -2,14 +2,14 @@ package com.TravelManagement.Trial_101.employee.employeeService.impl;
 
 import com.TravelManagement.Trial_101.employee.DTO.RequestDTO.EmployeeRequestDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.DepartmentResponseDTO;
-import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.DesignationResponseDTO;
+//import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.DesignationResponseDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.EmployeeResponseDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.RoleResponseDTO;
 import com.TravelManagement.Trial_101.employee.Entity.Department;
-import com.TravelManagement.Trial_101.employee.Entity.Designation;
+//import com.TravelManagement.Trial_101.employee.Entity.Designation;
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import com.TravelManagement.Trial_101.employee.Entity.Role;
-import com.TravelManagement.Trial_101.employee.employeeRepository.DesignationRepo;
+//import com.TravelManagement.Trial_101.employee.employeeRepository.DesignationRepo;
 import com.TravelManagement.Trial_101.employee.employeeRepository.Rolerepo;
 import com.TravelManagement.Trial_101.employee.employeeRepository.departmentrepo;
 import com.TravelManagement.Trial_101.employee.employeeRepository.employeeRepository;
@@ -30,8 +30,8 @@ public class ServiceImpl implements employeeService {
     @Autowired
     departmentrepo departmentrepo;
 
-    @Autowired
-    DesignationRepo designationRepo;
+//    @Autowired
+//    DesignationRepo designationRepo;
 
     @Autowired
     Rolerepo rolerepo;
@@ -88,17 +88,7 @@ public class ServiceImpl implements employeeService {
             }
         }
 
-        if (requestDTO.getDesignationID() != null) {
-            Optional<Designation> responseOpt = designationRepo.findById(requestDTO.getDesignationID());
-            if(responseOpt.isPresent()){
-                Designation dto = responseOpt.get();
-                Designation designation = new Designation();
-                designation.setDesignationID(dto.getDesignationID());
-                designation.setDesignationName(dto.getDesignationName());
-                designation.setEmployeeLevel(dto.getEmployeeLevel());
-                employee.setDesignation(designation);
-            }
-        }
+
 
         if (requestDTO.getRoleID() != null) {
             Optional<Role> responseOpt = rolerepo.findById(requestDTO.getRoleID());
@@ -161,17 +151,17 @@ public class ServiceImpl implements employeeService {
     }
 
     // ─── Designation Mapper ────────────────────────────────────────────
-    private DesignationResponseDTO mapToDesignationResponseDTO(Designation designation) {
-        if (designation == null) return null;
-
-        DesignationResponseDTO dto = new DesignationResponseDTO();
-        dto.setDesignationID(designation.getDesignationID());
-        dto.setDesignationName(designation.getDesignationName());
-        dto.setEmployeeLevel(designation.getEmployeeLevel() != null ? designation.getEmployeeLevel().name() : null);
-        dto.setStatus(designation.getStatus() != null ? designation.getStatus().name() : null);
-
-        return dto;
-    }
+//    private DesignationResponseDTO mapToDesignationResponseDTO(Designation designation) {
+//        if (designation == null) return null;
+//
+//        DesignationResponseDTO dto = new DesignationResponseDTO();
+//        dto.setDesignationID(designation.getDesignationID());
+//        dto.setDesignationName(designation.getDesignationName());
+//        dto.setEmployeeLevel(designation.getEmployeeLevel() != null ? designation.getEmployeeLevel().name() : null);
+//        dto.setStatus(designation.getStatus() != null ? designation.getStatus().name() : null);
+//
+//        return dto;
+//    }
 
     private EmployeeResponseDTO mapToEmployeeResponseDTO(Employee employee) {
         if (employee == null) return null;
@@ -185,7 +175,6 @@ public class ServiceImpl implements employeeService {
 
         // Map nested objects
         dto.setDepartment(mapToDepartmentResponseDTO(employee.getDepartment()));
-        dto.setDesignation(mapToDesignationResponseDTO(employee.getDesignation()));
         dto.setRole(mapToRoleResponseDTO(employee.getRole()));
         dto.setCreatedAt(employee.getCreatedAt());
 
