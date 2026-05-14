@@ -70,4 +70,15 @@ public class travelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+    @PutMapping("/updateRequest")
+    public ResponseEntity<TravelRequestResponseDTO> updtaedRequests(@RequestBody TravelRequestDTO travelRequest){
+        try{
+            return ResponseEntity.ok(travelSvc.updateRequest(travelRequest));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

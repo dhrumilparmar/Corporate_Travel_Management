@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class TravelRequestDTO {
 
     private Integer   employeeID;
+    private Integer   TravelReqID;
     private String    destination;
     private LocalDate startTravel;
     private LocalDate endTravel;

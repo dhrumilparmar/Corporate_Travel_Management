@@ -18,4 +18,6 @@ public interface Service {
     ExpenseResponseDTO submitBills(ExpenseRequestDTO expenseRequestDTO);
 
     void deleteRequest(TravelRequest travelRequest);
+
+    TravelRequestResponseDTO updateRequest(TravelRequestDTO dto);
 }

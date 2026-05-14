@@ -3,6 +3,7 @@ package com.TravelManagement.Trial_101.travelRequests.Entity;
 
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class TravelRequest {
 
     @Id

@@ -10,20 +10,28 @@ import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TravelReque
 import com.TravelManagement.Trial_101.travelRequests.Entity.*;
 import com.TravelManagement.Trial_101.travelRequests.Repository.ExpenseRepo.Expenserepository;
 import com.TravelManagement.Trial_101.travelRequests.Repository.ExpenseCategoryRepo.ExpenseCategoryRepo;
+import com.TravelManagement.Trial_101.travelRequests.Repository.travelRepository.TransportModeRepository;
 import com.TravelManagement.Trial_101.travelRequests.Repository.travelRepository.TravelRepository;
 import com.TravelManagement.Trial_101.travelRequests.travelService.Service;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 
+import java.time.Year;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @org.springframework.stereotype.Service
 public class travelSvcImpl implements Service {
 
     @Autowired
     TravelRepository travelRepo;
+
+
+    @Autowired
+    TransportModeRepository transportModeRepository;
 
     @Autowired
     Expenserepository expensrepo;
@@ -59,10 +67,7 @@ public class travelSvcImpl implements Service {
 
         TravelRequest travelRequest = new TravelRequest();
 
-        // ==========================================
-        // 🪄 AUTO-GENERATE REQUEST CODE IN JAVA
-        // ==========================================
-        int currentYear = java.time.Year.now().getValue();
+        int currentYear = Year.now().getValue();
         String prefix = "TR-" + currentYear + "-";
 
         // 1. Ask the DB for the last code of this year
@@ -132,6 +137,57 @@ public class travelSvcImpl implements Service {
                travelRepo.deleteById(reqId);
            }
 
+    }
+    @Override
+    public TravelRequestResponseDTO updateRequest(TravelRequestDTO dto) {
+
+        // Safety Check: Verify ID was successfully mapped from JSON
+        if (dto.getTravelReqID() == null) {
+            throw new IllegalArgumentException("travelReqID is missing or invalid in the request body");
+        }
+
+        // 1. Fetch existing entity
+        TravelRequest existing = travelRepo.findById(dto.getTravelReqID())
+                .orElseThrow(() -> new EntityNotFoundException("Travel request not found with ID: " + dto.getTravelReqID()));
+
+        // 2. Safely verify status is DRAFT (Handles both Enum and String statuses)
+        String currentStatus = existing.getStatus() != null ? existing.getStatus().toString() : "";
+
+        if (!"DRAFT".equalsIgnoreCase(currentStatus)) {
+            throw new IllegalStateException("Only DRAFT requests can be updated. Current status is: " + currentStatus);
+        }
+
+        // 3. Update standard fields
+        existing.setDestination(dto.getDestination());
+        existing.setStartTravel(dto.getStartTravel());
+        existing.setEndTravel(dto.getEndTravel());
+        existing.setPurpose(dto.getPurpose());
+        existing.setJustification(dto.getJustification());
+
+
+        if (dto.getTransportID() != null) {
+            TransportMode transport = transportModeRepository.findById(dto.getTransportID())
+                    .orElseThrow(() -> new EntityNotFoundException("Transport not found"));
+            existing.setTransportMode(transport);
+        }
+        // Safely update Status Enum (e.g., moving from DRAFT to SUBMITTED)
+        if (dto.getStatus() != null) {
+            existing.setStatus(TravelRequest.Status.valueOf(dto.getStatus().toUpperCase()));
+        }
+
+        // Update Nested Budget Values
+        if (dto.getBudget() != null && existing.getRequestBudget() != null) {
+            existing.getRequestBudget().setTravelAmount(dto.getBudget().getTravelAmount());
+            existing.getRequestBudget().setAccommodationAmount(dto.getBudget().getAccommodationAmount());
+            existing.getRequestBudget().setLocalTransportAmount(dto.getBudget().getLocalTransportAmount());
+            existing.getRequestBudget().setMealsAmount(dto.getBudget().getMealsAmount());
+        }
+
+        // 4. Save the updated entity
+        TravelRequest saved = travelRepo.save(existing);
+
+        // 5. Return response
+        return mapToTravelRequestResponseDTO(saved);
     }
 
 
@@ -237,7 +293,7 @@ public class travelSvcImpl implements Service {
         dto.setCreatedAt(travelRequest.getCreatedAt());
         dto.setUpdatedAt(travelRequest.getUpdatedAt());
 
-        // 2. Map Enum to String safely
+            // 2. Map Enum to String safely
         if (travelRequest.getStatus() != null) {
             dto.setStatus(travelRequest.getStatus().name());
         }
