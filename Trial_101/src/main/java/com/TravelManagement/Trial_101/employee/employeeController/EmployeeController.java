@@ -13,7 +13,8 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/employee")
+@RequestMapping("/api/employee")
+@CrossOrigin(origins = "http://localhost:4200") // or configure globally
 public class EmployeeController {
     @Autowired
     employeeService empSvc;
@@ -41,6 +42,7 @@ public class EmployeeController {
         }
     }
 
+
     @PostMapping("/createEmployee")
     public ResponseEntity<EmployeeResponseDTO> saveEmp(@RequestBody EmployeeRequestDTO requestDTO){
         try{
@@ -51,10 +53,10 @@ public class EmployeeController {
         }
     }
 
-    @DeleteMapping("/deleteEmployee")
-    public ResponseEntity<Void> deleteEmployee(@RequestBody Employee employee){
+    @DeleteMapping("/deleteEmployee/{employeeID}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Integer employeeID){
         try{
-            empSvc.deleteEmployeeById(employee);
+            empSvc.deleteEmployeeById(employeeID);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             e.printStackTrace();

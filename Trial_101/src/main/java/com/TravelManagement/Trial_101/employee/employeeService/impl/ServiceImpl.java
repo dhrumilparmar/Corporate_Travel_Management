@@ -14,6 +14,7 @@ import com.TravelManagement.Trial_101.employee.employeeRepository.Rolerepo;
 import com.TravelManagement.Trial_101.employee.employeeRepository.departmentrepo;
 import com.TravelManagement.Trial_101.employee.employeeRepository.employeeRepository;
 import com.TravelManagement.Trial_101.employee.employeeService.employeeService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +44,13 @@ public class ServiceImpl implements employeeService {
     }
 
     @Override
-    public void deleteEmployeeById(Employee employee){
-        empRes.delete(employee);
+    public void deleteEmployeeById(Integer employeeID){
+        if (!empRes.existsById(employeeID)) {
+            // Or just let deleteById throw the error, which is also fine
+            throw new EntityNotFoundException("Employee not found with id: " + employeeID);
+        }
+
+        empRes.deleteById(employeeID);
     }
 
     @Override
@@ -70,7 +76,7 @@ public class ServiceImpl implements employeeService {
         employee.setPasswordHash(requestDTO.getPassword()); // ⚠️ Note: Use PasswordEncoder here later!
 
         if (requestDTO.getStatus() != null) {
-            employee.setStatus(Employee.Status.valueOf(requestDTO.getStatus()));
+            employee.setStatus(Employee.Status.valueOf(requestDTO.getStatus().toUpperCase()));
         }
 
         // 3. Map Foreign Key IDs to Nested Entity Objects
