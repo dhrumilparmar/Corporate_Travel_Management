@@ -52,13 +52,87 @@ public class ServiceImpl implements employeeService {
 
         empRes.deleteById(employeeID);
     }
-
     @Override
-    public EmployeeResponseDTO updateEmployee(Employee employee){
-        Employee updatedEmployee =empRes.save(employee);
-        return mapToEmployeeResponseDTO(updatedEmployee);
+    public EmployeeResponseDTO updateEmployee(Integer id, EmployeeRequestDTO requestDTO) {
+        // Get the existing employee entity from database
+        Optional<Employee> employeeOpt = empRes.findById(id); // Use repository that returns Entity, not DTO
+
+        if (!employeeOpt.isPresent()) {
+            throw new RuntimeException("Employee not found with ID: " + id);
+        }
+
+        Employee employee = employeeOpt.get();
+
+        // Update fields
+        if (requestDTO.getFullName() != null) {
+            employee.setFullName(requestDTO.getFullName());
+        }
+        if (requestDTO.getEmail() != null) {
+            employee.setEmail(requestDTO.getEmail());
+        }
+        if (requestDTO.getDepartmentID() != null) {
+            Optional<Department> departmentOpt = departmentrepo.findById(requestDTO.getDepartmentID());
+            if (departmentOpt.isPresent()) {
+                employee.setDepartment(departmentOpt.get()); // Set the actual entity, not DTO
+            } else {
+                throw new RuntimeException("Department not found with ID: " + requestDTO.getDepartmentID());
+            }
+        }
+        if (requestDTO.getRoleID() != null) {
+            Optional<Role> roleOpt = rolerepo.findById(requestDTO.getRoleID());
+            if (roleOpt.isPresent()) {
+                employee.setRole(roleOpt.get()); // Set the actual entity, not DTO
+            } else {
+                throw new RuntimeException("Role not found with ID: " + requestDTO.getRoleID());
+            }
+        }
+        if (requestDTO.getStatus() != null) {
+            employee.setStatus(Employee.Status.valueOf(requestDTO.getStatus()));
+        }
+
+        // Update password only if provided - HASH IT!
+        if (requestDTO.getPassword() != null && !requestDTO.getPassword().trim().isEmpty()) {
+            String hashedPassword = requestDTO.getPassword();
+            employee.setPasswordHash(hashedPassword);
+        }
+
+        // Save the updated entity
+        Employee savedEmployee = empRes.save(employee);
+
+        // Convert to response DTO
+        return convertToResponseDTO(savedEmployee);
     }
 
+    // Helper method to convert Entity to Response DTO
+    private EmployeeResponseDTO convertToResponseDTO(Employee employee) {
+        EmployeeResponseDTO dto = new EmployeeResponseDTO();
+        dto.setEmployeeID(employee.getEmployeeID());
+        dto.setFullName(employee.getFullName());
+        dto.setEmail(employee.getEmail());
+        dto.setStatus(String.valueOf(employee.getStatus()));
+        dto.setCreatedAt(employee.getCreatedAt());
+        dto.setPasswordHash(employee.getPasswordHash());
+
+        // Convert Department entity to DepartmentResponseDTO if exists
+        if (employee.getDepartment() != null) {
+            DepartmentResponseDTO deptDTO = new DepartmentResponseDTO();
+            deptDTO.setDepartmentID(employee.getDepartment().getDepartmentID());
+            deptDTO.setDepartmentName(employee.getDepartment().getDepartmentName());
+            // Set other department properties as needed
+            dto.setDepartment(deptDTO);
+        }
+
+        // Convert Role entity to RoleResponseDTO if exists
+        if (employee.getRole() != null) {
+            RoleResponseDTO roleDTO = new RoleResponseDTO();
+            roleDTO.setRoleID(employee.getRole().getRoleID());
+            roleDTO.setRoleName(String.valueOf(employee.getRole().getRoleName()));
+            // Set other role properties as needed
+            dto.setRole(roleDTO);
+        }
+
+        return dto;
+    }
 
 
 
@@ -179,10 +253,12 @@ public class ServiceImpl implements employeeService {
         dto.setStatus(employee.getStatus() != null ? employee.getStatus().name() : null);
         dto.setCreatedAt(employee.getCreatedAt());
 
+
         // Map nested objects
         dto.setDepartment(mapToDepartmentResponseDTO(employee.getDepartment()));
         dto.setRole(mapToRoleResponseDTO(employee.getRole()));
         dto.setCreatedAt(employee.getCreatedAt());
+
 
         // Map manager using Summary DTO to avoid infinite loop
 //        if (employee.getManager() != null) {

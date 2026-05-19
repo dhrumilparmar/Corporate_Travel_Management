@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class EmployeeRequestDTO {
 
     private String  fullName;
+    private Integer   employeeID;
     private String  email;
     private String  password;         // raw password (will be hashed)
     private Integer departmentID;     //dropdown

@@ -65,12 +65,11 @@ public class EmployeeController {
     }
 
 
-    @PutMapping("/updateEmployee")
-    public ResponseEntity<EmployeeResponseDTO> updateEmployee(@RequestBody Employee employee){
-        try{
-            return ResponseEntity.ok(empSvc.updateEmployee(employee));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @PutMapping("/updateEmployee/{id}")
+    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
+            @PathVariable Integer id,
+            @RequestBody EmployeeRequestDTO employeeRequestDTO) {
+//        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+        return ResponseEntity.ok(empSvc.updateEmployee(id, employeeRequestDTO));
     }
 }

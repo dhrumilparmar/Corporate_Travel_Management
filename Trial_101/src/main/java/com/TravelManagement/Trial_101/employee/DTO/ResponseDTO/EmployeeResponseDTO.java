@@ -18,6 +18,7 @@ public class EmployeeResponseDTO {
     private String    email;
     private String    status;
     private LocalDateTime createdAt;
+    private String passwordHash ;
 //    private Integer roleID;
 //    private String  roleName;
 //    private Integer designationID;
