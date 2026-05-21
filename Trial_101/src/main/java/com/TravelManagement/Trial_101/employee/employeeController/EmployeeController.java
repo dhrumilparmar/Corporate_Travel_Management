@@ -1,6 +1,7 @@
 package com.TravelManagement.Trial_101.employee.employeeController;
 
 import com.TravelManagement.Trial_101.employee.DTO.RequestDTO.EmployeeRequestDTO;
+import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.ManagerResponseDTO;
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import com.TravelManagement.Trial_101.employee.employeeService.employeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,38 @@ import java.util.List;
 public class EmployeeController {
     @Autowired
     employeeService empSvc;
+
+
+//
+//    @GetMapping("/getAll")
+//    public ResponseEntity<List<EmployeeResponseDTO>> getAllManager() {
+//        try {
+//            List<EmployeeResponseDTO> employees = (List<EmployeeResponseDTO>) empSvc.getAllEmployee();
+//
+//            // Optional: Check if list is empty
+//            if (employees.isEmpty()) {
+//                return ResponseEntity.noContent().build(); // Returns 204 No Content
+//            }
+//            return ResponseEntity.ok(employees); // Returns 200 OK with the List
+//
+//        } catch (Exception e) {
+//            e.printStackTrace(); // Always log the error for debugging!
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+
+
+
+    @GetMapping("/getManager")
+    public ResponseEntity<List<ManagerResponseDTO>> getManager(){
+        try {
+            List<ManagerResponseDTO> manager = empSvc.getAllManagers();
+            return ResponseEntity.ok(manager);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @GetMapping("/profile/{employeeID}")
     public ResponseEntity<EmployeeResponseDTO> getProfile(@PathVariable Integer employeeID) {
@@ -72,4 +105,5 @@ public class EmployeeController {
 //        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
         return ResponseEntity.ok(empSvc.updateEmployee(id, employeeRequestDTO));
     }
+
 }

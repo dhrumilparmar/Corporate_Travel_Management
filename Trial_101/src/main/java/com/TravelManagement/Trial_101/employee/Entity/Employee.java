@@ -59,7 +59,7 @@ public class Employee {
     private Role role;
 
     // Self-referencing: Many employees report to one manager
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "managerID", referencedColumnName = "employeeID")
     private Employee manager;
 

@@ -4,6 +4,7 @@ import com.TravelManagement.Trial_101.employee.DTO.RequestDTO.EmployeeRequestDTO
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.DepartmentResponseDTO;
 //import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.DesignationResponseDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.EmployeeResponseDTO;
+import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.ManagerResponseDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.RoleResponseDTO;
 import com.TravelManagement.Trial_101.employee.Entity.Department;
 //import com.TravelManagement.Trial_101.employee.Entity.Designation;
@@ -38,6 +39,47 @@ public class ServiceImpl implements employeeService {
     Rolerepo rolerepo;
 
     @Override
+    public List<ManagerResponseDTO> getAllManagers() {
+        // Get all employees who are managers
+        List<Employee> managerEntities = empRes.getAllManager();
+
+        // Convert to ManagerResponseDTO list
+        return managerEntities.stream()
+                .map(this::mapToManagerResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+//
+
+//    @Override
+//    public List<EmployeeResponseDTO> getAllEmployee() {
+//        // 1. Fetch List of Entities from DB
+//        List<Employee> employees = empRes.findAll();
+//
+//        // 2. Convert List<Entity> to List<DTO> using Streams
+//        // ❌ DO NOT ADD ANY (EmployeeResponseDTO) CAST HERE!
+//        return employees.stream()
+//                .map(this::mapToEmployeeResponseDTO)
+//                .collect(Collectors.toList());
+//    }
+
+
+//    @Override
+//    public List<ManagerResponseDTO> getAllManager(){
+//        List<ManagerResponseDTO> employees =  empRes.getAllManager();
+//
+//        return ManagerResponseDTO(employees);
+//    }
+
+//    @Override
+//    public List<ManagerResponseDTO> getAllManager(){
+//        ManagerResponseDTO employee = (ManagerResponseDTO) empRes.getAllManager();
+//        return Collections.singletonList(mapToManagerResponseDTO(employee));
+//    }
+
+
+
+    @Override
     public EmployeeResponseDTO getEmployee(Integer id) {
         Optional<Employee> employee = empRes.findById(id);
         return mapToEmployeeResponseDTO(employee.get());
@@ -52,16 +94,12 @@ public class ServiceImpl implements employeeService {
 
         empRes.deleteById(employeeID);
     }
+
     @Override
     public EmployeeResponseDTO updateEmployee(Integer id, EmployeeRequestDTO requestDTO) {
-        // Get the existing employee entity from database
-        Optional<Employee> employeeOpt = empRes.findById(id); // Use repository that returns Entity, not DTO
-
-        if (!employeeOpt.isPresent()) {
-            throw new RuntimeException("Employee not found with ID: " + id);
-        }
-
-        Employee employee = employeeOpt.get();
+        // Get existing employee
+        Employee employee = empRes.findById(id)
+                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + id));
 
         // Update fields
         if (requestDTO.getFullName() != null) {
@@ -71,32 +109,34 @@ public class ServiceImpl implements employeeService {
             employee.setEmail(requestDTO.getEmail());
         }
         if (requestDTO.getDepartmentID() != null) {
-            Optional<Department> departmentOpt = departmentrepo.findById(requestDTO.getDepartmentID());
-            if (departmentOpt.isPresent()) {
-                employee.setDepartment(departmentOpt.get()); // Set the actual entity, not DTO
-            } else {
-                throw new RuntimeException("Department not found with ID: " + requestDTO.getDepartmentID());
-            }
+            Department department = departmentrepo.findById(requestDTO.getDepartmentID())
+                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + requestDTO.getDepartmentID()));
+            employee.setDepartment(department);
         }
         if (requestDTO.getRoleID() != null) {
-            Optional<Role> roleOpt = rolerepo.findById(requestDTO.getRoleID());
-            if (roleOpt.isPresent()) {
-                employee.setRole(roleOpt.get()); // Set the actual entity, not DTO
-            } else {
-                throw new RuntimeException("Role not found with ID: " + requestDTO.getRoleID());
-            }
+            Role role = rolerepo.findById(requestDTO.getRoleID())
+                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + requestDTO.getRoleID()));
+            employee.setRole(role);
         }
         if (requestDTO.getStatus() != null) {
             employee.setStatus(Employee.Status.valueOf(requestDTO.getStatus()));
         }
 
-        // Update password only if provided - HASH IT!
+        // Update password
         if (requestDTO.getPassword() != null && !requestDTO.getPassword().trim().isEmpty()) {
-            String hashedPassword = requestDTO.getPassword();
-            employee.setPasswordHash(hashedPassword);
+            employee.setPasswordHash(requestDTO.getPassword());
         }
 
-        // Save the updated entity
+        // Update manager
+        if (requestDTO.getManagerID() != null) {
+            Employee manager = empRes.findById(requestDTO.getManagerID())
+                    .orElseThrow(() -> new RuntimeException("Manager not found with ID: " + requestDTO.getManagerID()));
+            employee.setManager(manager);
+        } else {
+            employee.setManager(null);
+        }
+
+        // Save updated entity
         Employee savedEmployee = empRes.save(employee);
 
         // Convert to response DTO
@@ -113,22 +153,23 @@ public class ServiceImpl implements employeeService {
         dto.setCreatedAt(employee.getCreatedAt());
         dto.setPasswordHash(employee.getPasswordHash());
 
-        // Convert Department entity to DepartmentResponseDTO if exists
+        // Map department
         if (employee.getDepartment() != null) {
-            DepartmentResponseDTO deptDTO = new DepartmentResponseDTO();
-            deptDTO.setDepartmentID(employee.getDepartment().getDepartmentID());
-            deptDTO.setDepartmentName(employee.getDepartment().getDepartmentName());
-            // Set other department properties as needed
-            dto.setDepartment(deptDTO);
+            dto.setDepartment(mapToDepartmentResponseDTO(employee.getDepartment()));
         }
 
-        // Convert Role entity to RoleResponseDTO if exists
+        // Map role
         if (employee.getRole() != null) {
-            RoleResponseDTO roleDTO = new RoleResponseDTO();
-            roleDTO.setRoleID(employee.getRole().getRoleID());
-            roleDTO.setRoleName(String.valueOf(employee.getRole().getRoleName()));
-            // Set other role properties as needed
-            dto.setRole(roleDTO);
+            dto.setRole(mapToRoleResponseDTO(employee.getRole()));
+        }
+
+        // Map manager info
+        if (employee.getManager() != null) {
+            dto.setManagerID(employee.getManager().getEmployeeID());
+
+            // GET MANAGER NAME FROM EMPLOYEE ID - This is what you asked for!
+            String managerName = findManagerNameFromEmployeeId(employee.getManager().getEmployeeID());
+            dto.setManagerName(managerName);
         }
 
         return dto;
@@ -140,57 +181,45 @@ public class ServiceImpl implements employeeService {
 
     @Override
     public EmployeeResponseDTO saveEmployee(EmployeeRequestDTO requestDTO) {
-
         // 1. Create a new Employee ENTITY
         Employee employee = new Employee();
 
         // 2. Map simple String/Enum fields
         employee.setFullName(requestDTO.getFullName());
         employee.setEmail(requestDTO.getEmail());
-        employee.setPasswordHash(requestDTO.getPassword()); // ⚠️ Note: Use PasswordEncoder here later!
+        employee.setPasswordHash(requestDTO.getPassword());
 
         if (requestDTO.getStatus() != null) {
             employee.setStatus(Employee.Status.valueOf(requestDTO.getStatus().toUpperCase()));
         }
 
         // 3. Map Foreign Key IDs to Nested Entity Objects
-        // (Hibernate needs Objects, not just raw Integer IDs)
 
+        // Department
         if (requestDTO.getDepartmentID() != null) {
-            Optional<Department> responseOpt = departmentrepo.findById(requestDTO.getDepartmentID());
-            if (responseOpt.isPresent()) {
-                Department dto = responseOpt.get();
-                Department department = new Department();
-                department.setDepartmentID(dto.getDepartmentID());
-                department.setDepartmentName(dto.getDepartmentName());
-                // Set other properties
-                employee.setDepartment(department);
-            }
+            Department department = departmentrepo.findById(requestDTO.getDepartmentID())
+                    .orElseThrow(() -> new RuntimeException("Department not found with ID: " + requestDTO.getDepartmentID()));
+            employee.setDepartment(department);
         }
 
-
-
+        // Role
         if (requestDTO.getRoleID() != null) {
-            Optional<Role> responseOpt = rolerepo.findById(requestDTO.getRoleID());
-            if (responseOpt.isPresent()) {
-                Role dto = responseOpt.get();
-                Role newRole = new Role();
-                newRole.setRoleID(dto.getRoleID());
-                newRole.setRoleName(dto.getRoleName());
-                // Set other properties as needed
-                employee.setRole(newRole);
-            }
-        }
-        if (requestDTO.getManagerID() != null) {
-            Employee manager = new Employee();
-            manager.setEmployeeID(requestDTO.getManagerID());
-            employee.setManager(manager);
+            Role role = rolerepo.findById(requestDTO.getRoleID())
+                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + requestDTO.getRoleID()));
+            employee.setRole(role);
         }
 
-        // 4. Save the ENTITY to the database (NOT the DTO)
+        // Manager - FETCH THE ACTUAL MANAGER ENTITY FROM DATABASE!
+        if (requestDTO.getManagerID() != null) {
+            Employee manager = empRes.findById(requestDTO.getManagerID())
+                    .orElseThrow(() -> new RuntimeException("Manager not found with ID: " + requestDTO.getManagerID()));
+            employee.setManager(manager); // Set the complete manager entity
+        }
+
+        // 4. Save the ENTITY to the database
         Employee savedEmployee = empRes.save(employee);
 
-        // 5. Map the saved Entity back to a Response DTO for the API response
+        // 5. Map to Response DTO
         return mapToEmployeeResponseDTO(savedEmployee);
     }
 
@@ -206,6 +235,24 @@ public class ServiceImpl implements employeeService {
                 .collect(Collectors.toList());
     }
 
+
+    private ManagerResponseDTO mapToManagerResponseDTO(Employee employee) {
+        if (employee == null) return null;
+
+        ManagerResponseDTO dto = new ManagerResponseDTO();
+        dto.setEmployeeID(employee.getEmployeeID());
+
+        // Check if fullName is null or empty, and handle appropriately
+        if (employee.getFullName() != null && !employee.getFullName().trim().isEmpty()) {
+            dto.setFullName(employee.getFullName());
+        } else {
+            // Try to fetch the complete employee record
+            String managerName = findManagerNameFromEmployeeId(employee.getEmployeeID());
+            dto.setFullName(managerName);
+        }
+
+        return dto;
+    }
 
     // ─── Department Mapper ─────────────────────────────────────────────
     private DepartmentResponseDTO mapToDepartmentResponseDTO(Department department) {
@@ -242,7 +289,6 @@ public class ServiceImpl implements employeeService {
 //
 //        return dto;
 //    }
-
     private EmployeeResponseDTO mapToEmployeeResponseDTO(Employee employee) {
         if (employee == null) return null;
 
@@ -252,20 +298,51 @@ public class ServiceImpl implements employeeService {
         dto.setEmail(employee.getEmail());
         dto.setStatus(employee.getStatus() != null ? employee.getStatus().name() : null);
         dto.setCreatedAt(employee.getCreatedAt());
-
+        dto.setPasswordHash(employee.getPasswordHash());
 
         // Map nested objects
-        dto.setDepartment(mapToDepartmentResponseDTO(employee.getDepartment()));
-        dto.setRole(mapToRoleResponseDTO(employee.getRole()));
-        dto.setCreatedAt(employee.getCreatedAt());
+        if (employee.getDepartment() != null) {
+            dto.setDepartment(mapToDepartmentResponseDTO(employee.getDepartment()));
+        }
 
+        if (employee.getRole() != null) {
+            dto.setRole(mapToRoleResponseDTO(employee.getRole()));
+        }
 
-        // Map manager using Summary DTO to avoid infinite loop
-//        if (employee.getManager() != null) {
-//            dto.setManager(mapToEmployeeSummaryDTO(employee.getManager()));
-//        }
+        // Map manager info - GET MANAGER NAME FROM EMPLOYEE ID
+        if (employee.getManager() != null) {
+            dto.setManagerID(employee.getManager().getEmployeeID());
+
+            // GET MANAGER NAME FROM EMPLOYEE ID - This is what you asked for!
+            String managerName = findManagerNameFromEmployeeId(employee.getManager().getEmployeeID());
+            dto.setManagerName(managerName);
+        }
 
         return dto;
     }
 
+    // NEW METHOD: Find manager name from employee ID
+    private String findManagerNameFromEmployeeId(Integer managerId) {
+        if (managerId == null) {
+            return null;
+        }
+
+        try {
+            Optional<Employee> managerOpt = empRes.findById(managerId);
+            if (managerOpt.isPresent()) {
+                Employee manager = managerOpt.get();
+                if (manager.getFullName() != null && !manager.getFullName().trim().isEmpty()) {
+                    return manager.getFullName();
+                } else {
+                    // Fallback if fullName is null or empty
+                    return "Manager " + managerId;
+                }
+            } else {
+                return "Unknown Manager (" + managerId + ")";
+            }
+        } catch (Exception e) {
+            System.err.println("Error finding manager with ID " + managerId + ": " + e.getMessage());
+            return "Manager " + managerId;
+        }
+    }
 }

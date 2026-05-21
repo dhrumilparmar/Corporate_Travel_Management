@@ -13,28 +13,17 @@ import java.time.LocalDateTime;
 @Builder
 public class EmployeeResponseDTO {
 
-    private Integer   employeeID;
-    private String    fullName;
-    private String    email;
-    private String    status;
+    private Integer employeeID;
+    private String fullName;
+    private String email;
+    private String status;
     private LocalDateTime createdAt;
-    private String passwordHash ;
-//    private Integer roleID;
-//    private String  roleName;
-//    private Integer designationID;
-//    private String  designationName;
-//    private String  employeeLevel;
-////    private String  status;
-//
-//    private Integer departmentID;
-//    private String  departmentName;
-////    private String  status;
+    private String passwordHash;
 
-    // Nested objects instead of raw IDs
-    private DepartmentResponseDTO  department;
-//    private DesignationResponseDTO designation;
-    private RoleResponseDTO        role;
+    // These should be simple types
+    private Integer managerID;      // Just the ID (Integer)
+    private String managerName;     // Just the name (String) - fetched from employee table
 
-    // Manager info (simple, not full nested to avoid infinite loop)
-//    private EmployeeSummaryDTO manager;
+    private DepartmentResponseDTO department;
+    private RoleResponseDTO role;
 }

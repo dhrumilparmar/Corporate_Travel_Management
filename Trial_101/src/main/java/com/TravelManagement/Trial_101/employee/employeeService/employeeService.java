@@ -2,6 +2,7 @@ package com.TravelManagement.Trial_101.employee.employeeService;
 
 import com.TravelManagement.Trial_101.employee.DTO.RequestDTO.EmployeeRequestDTO;
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.EmployeeResponseDTO;
+import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.ManagerResponseDTO;
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import org.springframework.http.ResponseEntity;
 
@@ -19,4 +20,5 @@ public interface employeeService {
 
     EmployeeResponseDTO updateEmployee(Integer id,EmployeeRequestDTO dto);
 
+    List<ManagerResponseDTO> getAllManagers();
 }
