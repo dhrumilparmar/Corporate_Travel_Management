@@ -22,6 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class travelSvcImpl implements Service {
@@ -44,22 +45,12 @@ public class travelSvcImpl implements Service {
 
 
     @Override
-    public List<TravelRequestResponseDTO> getAllRequest() {
+    public List<TravelRequestResponseDTO> getAllRequestsByEmployeeId(Integer employeeID) {
+        List<TravelRequest> entities = travelRepo.findByEmployee_EmployeeID(employeeID);
 
-        // 1. Fetch ENTITIES from the database (Using the built-in findAll method)
-        List<TravelRequest> entities = travelRepo.findAll();
-
-        // 2. Create an empty list for DTOs
-        List<TravelRequestResponseDTO> dtoList = new ArrayList<>();
-
-        // 3. Loop through the ENTITIES
-        for (TravelRequest entity : entities) {
-            // 4. Convert Entity to DTO and add to the DTO list
-            dtoList.add(mapToTravelRequestResponseDTO(entity));
-        }
-
-        // 5. Return the populated DTO list
-        return dtoList;
+        return entities.stream()
+                .map(this::mapToTravelRequestResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -92,6 +83,7 @@ public class travelSvcImpl implements Service {
         travelRequest.setPurpose(dto.getPurpose());
         travelRequest.setJustification(dto.getJustification());
         travelRequest.setPolicyViolation(false);
+//        travelRequest.setRequestBudget(dto.getBudget().);
 
         if (dto.getStatus() != null) {
             travelRequest.setStatus(TravelRequest.Status.valueOf(dto.getStatus().toUpperCase()));
@@ -131,11 +123,14 @@ public class travelSvcImpl implements Service {
     }
 
     @Override
-    public void deleteRequest(TravelRequest travelRequest){
-           if (travelRequest.getTravelReqID() != null ){
-               int reqId = travelRequest.getTravelReqID();
-               travelRepo.deleteById(reqId);
-           }
+    public void deleteRequest(Integer reqID){
+
+        if (!travelRepo.existsById(reqID)) {
+            // Or just let deleteById throw the error, which is also fine
+            throw new EntityNotFoundException("Travel Request not found with id: " + reqID);
+        }
+
+        travelRepo.deleteById(reqID);
 
     }
     @Override
@@ -292,6 +287,8 @@ public class travelSvcImpl implements Service {
         dto.setPolicyViolation(travelRequest.getPolicyViolation());
         dto.setCreatedAt(travelRequest.getCreatedAt());
         dto.setUpdatedAt(travelRequest.getUpdatedAt());
+        dto.setEmployeeID(travelRequest.getEmployee().getEmployeeID());
+//        dto.getEmployeeID();
 
             // 2. Map Enum to String safely
         if (travelRequest.getStatus() != null) {

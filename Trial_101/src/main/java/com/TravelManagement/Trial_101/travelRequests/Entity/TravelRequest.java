@@ -86,7 +86,7 @@ public class TravelRequest {
             fetch = FetchType.LAZY)
     private List<Expense> expenses;
 
-    // One travel request has many approval histories
+    // One travel requeTst has many approval histories
     @OneToMany(mappedBy = "travelRequest",
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY)

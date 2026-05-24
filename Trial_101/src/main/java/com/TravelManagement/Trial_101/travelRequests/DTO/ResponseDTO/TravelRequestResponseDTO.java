@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TravelRequestResponseDTO {
-
     private Integer   travelReqID;
+    private Integer   employeeID;
     private String    requestCode;
     private String    destination;
     private LocalDate startTravel;

@@ -16,5 +16,9 @@ public interface TravelRepository extends JpaRepository<TravelRequest, Integer> 
 
     @Query(value = "select * from travel_request", nativeQuery = true) //jpql
     List<TravelRequestResponseDTO> getAllRequest();
+
+    @Query("SELECT tr FROM TravelRequest tr WHERE tr.employee.employeeID = :employeeId")
+    List<TravelRequest> findByEmployee_EmployeeID(@Param("employeeId") Integer employeeID);
+
 }
 

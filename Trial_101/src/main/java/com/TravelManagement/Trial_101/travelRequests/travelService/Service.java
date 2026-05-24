@@ -13,11 +13,11 @@ import java.util.List;
 public interface Service {
     TravelRequestResponseDTO createRequest(TravelRequestDTO travelreqDto);
 
-    List<TravelRequestResponseDTO> getAllRequest();
+    List<TravelRequestResponseDTO> getAllRequestsByEmployeeId(Integer employeeId);
 
     ExpenseResponseDTO submitBills(ExpenseRequestDTO expenseRequestDTO);
 
-    void deleteRequest(TravelRequest travelRequest);
+    void deleteRequest(Integer reqID);
 
     TravelRequestResponseDTO updateRequest(TravelRequestDTO dto);
 }

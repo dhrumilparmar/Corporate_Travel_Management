@@ -6,6 +6,7 @@ import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.ExpenseResp
 import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TravelRequestResponseDTO;
 import com.TravelManagement.Trial_101.travelRequests.Entity.TravelRequest;
 import com.TravelManagement.Trial_101.travelRequests.travelService.Service;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/travelrequest")
+@CrossOrigin(origins = "http://localhost:4200")
 public class travelController {
 
     @Autowired
@@ -30,28 +32,28 @@ public class travelController {
         }
     }
 
-    @DeleteMapping("/deleteRequest")
-    public ResponseEntity<Void> deleteTravelRequest(@RequestBody TravelRequest travelRequest){
+    @DeleteMapping("/deleteRequest/{ReqID}")
+    public ResponseEntity<Void> deleteTravelRequest(@PathVariable("ReqID") Integer ReqID){
         try{
-            travelSvc.deleteRequest(travelRequest);
+            travelSvc.deleteRequest(ReqID);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
 
 
-    @GetMapping("/allRequest")
-    public ResponseEntity<List<TravelRequestResponseDTO>> allMyRequest() { // ✅ 1. Added List<>
+    @GetMapping("/requests/{employeeId}")
+    public ResponseEntity<List<TravelRequestResponseDTO>> getRequestsByEmployee(@PathVariable("employeeId") Integer employeeId) {
         try {
-            List<TravelRequestResponseDTO> requests = travelSvc.getAllRequest();
-            // Optional: Check if list is empty
+            List<TravelRequestResponseDTO> requests = travelSvc.getAllRequestsByEmployeeId(employeeId);
+
             if (requests.isEmpty()) {
-                return ResponseEntity.noContent().build(); // Returns 204 No Content
+                return ResponseEntity.noContent().build();
             }
 
-            // ✅ 2. Removed the invalid (TravelRequestResponseDTO) cast
             return ResponseEntity.ok(requests);
 
         } catch (Exception e) {
@@ -73,7 +75,7 @@ public class travelController {
 
 
     @PutMapping("/updateRequest")
-    public ResponseEntity<TravelRequestResponseDTO> updtaedRequests(@RequestBody TravelRequestDTO travelRequest){
+    public ResponseEntity<TravelRequestResponseDTO> updateRequest(@RequestBody TravelRequestDTO travelRequest){
         try{
             return ResponseEntity.ok(travelSvc.updateRequest(travelRequest));
         } catch (Exception e) {
