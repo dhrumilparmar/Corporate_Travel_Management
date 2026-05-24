@@ -52,7 +52,6 @@ public class Employee {
     private Department department;
 
 
-
     // Many employees have one role
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "roleID", referencedColumnName = "roleID")
