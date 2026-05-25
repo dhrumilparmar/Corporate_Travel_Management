@@ -101,4 +101,18 @@ public class managerController {
                     .body(null);
         }
     }
+
+    @GetMapping("/allrequest/{id}")
+    public ResponseEntity<List<ApprovalHistoryResponseDTO>> getAllRequestHistroy(@PathVariable("id") Integer managerid){
+            try{
+                List<ApprovalHistoryResponseDTO> allRequest =
+                        managerSvc.getAllApprovedRequests(managerid);
+                return ResponseEntity.ok(allRequest);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+            }
+    }
+
 }

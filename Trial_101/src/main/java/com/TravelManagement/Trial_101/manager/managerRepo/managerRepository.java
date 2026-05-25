@@ -2,6 +2,7 @@ package com.TravelManagement.Trial_101.manager.managerRepo;
 
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.ApprovalHistoryResponseDTO;
+import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.ApprovalHistroyDTO;
 import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.PendingRequestCardDTO;
 import com.TravelManagement.Trial_101.travelRequests.Entity.TravelRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -86,6 +87,55 @@ public interface managerRepository extends JpaRepository<TravelRequest, Integer>
 //    List<PendingRequestCardDTO> findTravelRequestsByManagerIdNative(@Param("managerId") Integer managerId);
 //
 //
+
+    @Query(value = """
+            SELECT 
+                tr.request_code AS requestCode,
+                e.full_name AS employeeName,
+                d.department_name AS department,
+                rb.total_budget AS budget,
+
+                CASE 
+                    WHEN tr.policy_violation = 1 THEN 'Policy Violated'
+                    ELSE 'Within Policy'
+                END AS policyStatus,
+
+                CASE
+                    WHEN mah.action = 'APPROVED' THEN 'Manager Approved'
+                    WHEN mah.action = 'REJECTED' THEN 'Manager Rejected'
+                    ELSE 'Pending'
+                END AS managerApproval,
+
+                tr.status AS status
+
+            FROM travel_request tr
+
+            JOIN employee e 
+                ON tr.employeeid = e.employeeID
+
+            JOIN department d 
+                ON e.departmentid = d.departmentid
+
+            LEFT JOIN request_budget rb 
+                ON tr.travel_reqid = rb.travel_reqid
+
+            LEFT JOIN approval_history mah 
+                ON tr.travel_reqid = mah.travel_reqid
+                AND mah.approval_level = 'MANAGER'
+                AND mah.approverid = :managerId
+
+            WHERE tr.status IN (
+                'MANAGER_APPROVED',
+                'FINANCE_APPROVED',
+                'MANAGER_REJECTED',
+                'FINANCE_REJECTED'
+            )
+
+            ORDER BY tr.created_at DESC
+            """, nativeQuery = true)
+    List<TravelRequest> getApprovedAndRejectedRequests(
+            @Param("managerId") Integer managerId
+    );
 }
 
 

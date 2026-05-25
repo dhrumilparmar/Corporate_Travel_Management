@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Entity
@@ -50,7 +49,6 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departmentID", referencedColumnName = "departmentID")
     private Department department;
-
 
     // Many employees have one role
     @ManyToOne(fetch = FetchType.LAZY)

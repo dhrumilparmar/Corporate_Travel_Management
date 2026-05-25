@@ -63,7 +63,6 @@ public class ServiceImpl implements employeeService {
 //                .collect(Collectors.toList());
 //    }
 
-
 //    @Override
 //    public List<ManagerResponseDTO> getAllManager(){
 //        List<ManagerResponseDTO> employees =  empRes.getAllManager();

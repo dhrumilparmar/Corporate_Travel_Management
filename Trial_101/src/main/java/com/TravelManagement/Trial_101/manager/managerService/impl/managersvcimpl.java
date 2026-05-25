@@ -4,10 +4,7 @@ import com.TravelManagement.Trial_101.employee.Entity.Department;
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
 import com.TravelManagement.Trial_101.employee.employeeRepository.employeeRepository;
 import com.TravelManagement.Trial_101.manager.DTO.RequestDTO.ApprovalActionRequestDTO;
-import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.ApprovalActionResponseDTO;
-import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.ApprovalHistoryResponseDTO;
-import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.ApprovalRequestDetailDTO;
-import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.PendingRequestCardDTO;
+import com.TravelManagement.Trial_101.manager.DTO.ResponseDTO.*;
 import com.TravelManagement.Trial_101.manager.managerRepo.ApprovalHistoryRepository;
 import com.TravelManagement.Trial_101.manager.managerRepo.managerRepository;
 import com.TravelManagement.Trial_101.manager.managerService.managerSvc;
@@ -254,6 +251,29 @@ public class managersvcimpl implements managerSvc {
                 .employeeid(travelRequest.getEmployee().getEmployeeID())
                 .build();
     }
+
+
+
+    @Override
+    public List<ApprovalHistroyDTO> getApprovedAndRejectedRequests(Integer managerid){
+        List<TravelRequest> AllRequestHistroy  = managerRepo.getApprovedAndRejectedRequests(managerid);
+
+        return AllRequestHistroy.stream()
+                .map(this::maptoApprovalHistroyDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ApprovalHistroyDTO maptoApprovalHistroyDTO(TravelRequest travelRequest){
+        return ApprovalHistroyDTO.builder()
+                .requestCode(travelRequest.getRequestCode())
+                .employeeName(travelRequest.getEmployee().getFullName())
+                .department(travelRequest.getEmployee().getDepartment().getDepartmentName())
+                .budget(travelRequest.getRequestBudget().getTotalBudget())
+                .policyStatus(travelRequest.getPolicyViolation().toString())
+                .status(travelRequest.getStatus().toString())
+                .build();
+    }
+
 
 }
 
