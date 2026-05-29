@@ -1,12 +1,11 @@
 package com.TravelManagement.Trial_101.travelRequests.travelService.impl;
 
 import com.TravelManagement.Trial_101.employee.employeeRepository.employeeRepository;
+import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.ExpenseCreateRequest;
+import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.ExpenseItemRequest;
 import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.ExpenseRequestDTO;
 import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.TravelRequestDTO;
-import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.ExpenseResponseDTO;
-import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.RequestBudgetResponseDTO;
-import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TransportModeResponseDTO;
-import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TravelRequestResponseDTO;
+import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.*;
 import com.TravelManagement.Trial_101.travelRequests.Entity.*;
 import com.TravelManagement.Trial_101.travelRequests.Repository.ExpenseRepo.Expenserepository;
 import com.TravelManagement.Trial_101.travelRequests.Repository.ExpenseCategoryRepo.ExpenseCategoryRepo;
@@ -30,7 +29,6 @@ public class travelSvcImpl implements Service {
     @Autowired
     TravelRepository travelRepo;
 
-
     @Autowired
     TransportModeRepository transportModeRepository;
 
@@ -42,6 +40,67 @@ public class travelSvcImpl implements Service {
 
     @Autowired
     employeeRepository employeerepositoryl;
+
+    @Override
+    public ExpenseResponseDTO addExpense(ExpenseRequestDTO dto) {
+        // 1. Fetch required entities by ID
+        TravelRequest travelRequest = travelRepo.findById(dto.getTravelReqID())
+                .orElseThrow(() -> new EntityNotFoundException("Travel Request not found"));
+
+
+        Employee employee = employeerepositoryl.findById(dto.getEmployeeID())
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found"+ dto.getEmployeeID()));
+
+        ExpenseCategory category = expenseCategoryRepo.findById(dto.getCategoryID())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+
+        // 2. Create and Populate Expense Entity
+        Expense expense = new Expense();
+        expense.setExpenseCategory(category);
+        expense.setTravelRequest(travelRequest);
+        expense.setEmployee(employee);
+        expense.setAmount(dto.getAmount());
+        expense.setDescription(dto.getDescription());
+        expense.setExpenseDate(dto.getExpenseDate());
+        expense.setReceiptFile(dto.getReceiptFile());
+
+        // Set Enum status
+        expense.setStatus(Expense.Status.PROCESSING);
+
+        travelRequest.setStatus(TravelRequest.Status.REM_PENDING);
+        // 3. Save
+        Expense savedExpense = expensrepo.save(expense);
+
+        // 4. Return Response DTO
+        return mapToExpenseResponseDTO(savedExpense);
+    }
+
+    private ExpenseResponseDTO mapToExpenseResponseDTO(Expense expense) {
+        return ExpenseResponseDTO.builder()
+                .expenseID(expense.getExpenseID())
+                .travelReqID(expense.getTravelRequest().getTravelReqID())
+                .requestCode(expense.getTravelRequest().getRequestCode())
+                .EmployeeID(expense.getEmployee().getEmployeeID())
+                .EmployeeName(expense.getEmployee().getFullName())
+                .CategoryID(expense.getExpenseCategory().getCategoryID())
+                .CategoryName(expense.getExpenseCategory().getCategoryName())
+                .description(expense.getDescription())
+                .amount(expense.getAmount())
+                .receiptFile(expense.getReceiptFile())
+                .expenseDate(expense.getExpenseDate())
+                .status(expense.getStatus().name())
+                .createdAt(expense.getCreatedAt())
+                .build();
+    }
+
+
+
+
+    @Override
+    public List<TravelRequestFinanceDTO> getAllfinApproved(Integer employeeid){
+        return expensrepo.getAllfinanceApproved(employeeid);
+    }
+
 
 
     @Override
@@ -186,90 +245,6 @@ public class travelSvcImpl implements Service {
     }
 
 
-    @Override
-    public ExpenseResponseDTO submitBills(ExpenseRequestDTO dto) {
-        System.out.println("RECEIVED DTO: " + dto.toString());
-
-
-        // 1. Create the Entity
-        Expense expense = new Expense();
-
-        // 2. Map Simple Fields
-        expense.setDescription(dto.getDescription());
-        expense.setAmount(dto.getAmount());
-        expense.setExpenseDate(dto.getExpenseDate());
-        expense.setReceiptFile(dto.getReceiptFile());
-
-        // Set default status to PROCESSING (Finance hasn't approved it yet)
-        expense.setStatus(Expense.Status.PROCESSING);
-
-        // 3. Map Foreign Keys (The "Dummy Object" Trick)
-        // Link to Travel Request
-        if (dto.getTravelReqID() != null) {
-            TravelRequest tr = new TravelRequest();
-            tr.setTravelReqID(dto.getTravelReqID());
-            expense.setTravelRequest(tr);
-        } else {
-            throw new IllegalArgumentException("Travel Request ID is required to submit an expense!");
-        }
-
-        // Link to Employee
-        Integer empId = dto.getEmployeeID() != null ? dto.getEmployeeID() : 1; // Fallback for testing
-        Employee emp = new Employee();
-        emp.setEmployeeID(empId);
-        expense.setEmployee(emp);
-
-        // Link to Expense Category
-        ExpenseCategory catStub = new ExpenseCategory();
-        catStub.setCategoryID(dto.getCategoryID());
-        expense.setExpenseCategory(catStub);
-
-        // 4. Save to Database
-        Expense savedExpense = expensrepo.save(expense);
-
-        TravelRequest fullTravelReq = travelRepo.findById(dto.getTravelReqID()).orElse(null);
-        Employee fullEmployee = employeerepositoryl.findById(emp.getEmployeeID()).orElse(null);
-        ExpenseCategory fullCategory = expenseCategoryRepo.findById(dto.getCategoryID()).orElse(null);
-
-        // 5. Map to Response DTO and return
-        return mapToExpenseResponseDTO(savedExpense, fullTravelReq, fullEmployee, fullCategory);
-    }
-
-
-    private ExpenseResponseDTO mapToExpenseResponseDTO(Expense expense,
-                                                       TravelRequest travelReq,
-                                                       Employee employee,
-                                                       ExpenseCategory category) {
-        if (expense == null) return null;
-
-        ExpenseResponseDTO dto = new ExpenseResponseDTO();
-        dto.setExpenseID(expense.getExpenseID());
-        dto.setDescription(expense.getDescription());
-        dto.setAmount(expense.getAmount());
-        dto.setExpenseDate(expense.getExpenseDate());
-        dto.setReceiptFile(expense.getReceiptFile());
-        dto.setStatus(expense.getStatus() != null ? expense.getStatus().name() : null);
-        dto.setCreatedAt(expense.getCreatedAt());
-
-        // ✅ Map from Full Entities (Now populated!)
-        if (travelReq != null) {
-            dto.setTravelReqID(travelReq.getTravelReqID());
-            dto.setRequestCode(travelReq.getRequestCode()); // ✅ Now has value
-        }
-
-        if (employee != null) {
-            dto.setEmployeeID(employee.getEmployeeID());
-            dto.setEmployeeName(employee.getFullName()); // ✅ Now has value
-        }
-
-        if (category != null) {
-            dto.setCategoryID(category.getCategoryID());
-            dto.setCategoryName(category.getCategoryName()); // ✅ Now has value
-        }
-
-        return dto;
-    }
-
 
     private TravelRequestResponseDTO mapToTravelRequestResponseDTO(TravelRequest travelRequest) {
         if (travelRequest == null) return null;
@@ -336,6 +311,77 @@ public class travelSvcImpl implements Service {
         dto.setStatus(transportMode.getStatus() != null ? transportMode.getStatus().name() : null);
 
         return dto;
+    }
+
+
+    //prac save expense
+
+
+    public List<ExpenseResponse> saveExpenses(ExpenseCreateRequest request) {
+
+        TravelRequest travelRequest = travelRepo.findById(request.getTravelRequestId())
+                .orElseThrow(() -> new RuntimeException("Travel Request not found"+ request.getTravelRequestId()));
+
+        Employee employee = employeerepositoryl.findById(request.getEmployeeId())  // fixed method name
+                .orElseThrow(() -> new RuntimeException("Employee not found" + request.getEmployeeId()));
+
+        // Validate ownership (good practice)
+        if (!travelRequest.getEmployee().getEmployeeID().equals(employee.getEmployeeID())) {
+            throw new RuntimeException("Employee does not own this travel request");
+        }
+
+        // Delete old expenses if you want to replace all (uncomment if needed)
+        // expensrepo.deleteByTravelRequest_TravelReqID(request.getTravelRequestId());
+
+        List<Expense> expenseList = request.getExpenses().stream()
+                .map(item -> convertToEntity(item, travelRequest, employee))   // ← Pass employee here
+                .toList();
+
+        List<Expense> savedExpenses = expensrepo.saveAll(expenseList);
+
+        return savedExpenses.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    private Expense convertToEntity(ExpenseItemRequest item,
+                                    TravelRequest travelRequest,
+                                    Employee employee) {
+
+        Expense expense = new Expense();
+
+        expense.setTravelRequest(travelRequest);
+
+        expense.setEmployee(employee);                    // ← This was missing
+        expense.setAmount(item.getAmount());
+        expense.setExpenseDate(item.getDate());           // corrected field name
+        expense.setDescription(item.getDescription());
+
+        // Set category
+        var category = expenseCategoryRepo.findById(item.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        expense.setExpenseCategory(category);
+
+        // receipt is boolean in DTO, but receiptFile is String in entity
+        expense.setReceiptFile(item.getReceipt() != null && item.getReceipt() ? "receipt_uploaded" : null);
+
+//        expense.setStatus(Expense.Status.PROCESSING);
+        travelRequest.setStatus(TravelRequest.Status.REM_PENDING);
+
+        return expense;
+    }
+    private ExpenseResponse convertToResponse(Expense expense) {
+        return ExpenseResponse.builder()
+                .amount(expense.getAmount())
+                .categoryName(expense.getExpenseCategory().getCategoryName())
+                .categoryId(expense.getExpenseCategory().getCategoryID())
+                .date(expense.getExpenseDate())
+                .description(expense.getDescription())
+//                .receipt(expense.getReceiptFile() != null)
+                .receipt(expense.getReceiptFile())// return boolean if your DTO expects it
+                .createdAt(expense.getCreatedAt())
+                .expenseId(expense.getExpenseID())
+                .build();
     }
 
 }

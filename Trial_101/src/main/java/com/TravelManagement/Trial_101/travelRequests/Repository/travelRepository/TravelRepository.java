@@ -20,5 +20,7 @@ public interface TravelRepository extends JpaRepository<TravelRequest, Integer> 
     @Query("SELECT tr FROM TravelRequest tr WHERE tr.employee.employeeID = :employeeId")
     List<TravelRequest> findByEmployee_EmployeeID(@Param("employeeId") Integer employeeID);
 
+
+
 }
 

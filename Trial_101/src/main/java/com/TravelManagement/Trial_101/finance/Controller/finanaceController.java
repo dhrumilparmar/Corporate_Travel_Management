@@ -2,8 +2,10 @@ package com.TravelManagement.Trial_101.finance.Controller;
 
 import com.TravelManagement.Trial_101.employee.DTO.ResponseDTO.EmployeeResponseDTO;
 import com.TravelManagement.Trial_101.employee.employeeService.employeeService;
+import com.TravelManagement.Trial_101.finance.DTO.AllApprovedReqFin;
 import com.TravelManagement.Trial_101.finance.DTO.FinanceApprovalActionResponseDTO;
 import com.TravelManagement.Trial_101.finance.DTO.FinancePendingCardDTO;
+import com.TravelManagement.Trial_101.finance.DTO.FinanceRemApproval;
 import com.TravelManagement.Trial_101.finance.DTO.RequestDTO.FinanceApprovalActionRequestDTO;
 import com.TravelManagement.Trial_101.finance.Service.financeService;
 import com.TravelManagement.Trial_101.manager.DTO.RequestDTO.ApprovalActionRequestDTO;
@@ -69,4 +71,29 @@ public class finanaceController {
         EmployeeResponseDTO profile = empSvc.getEmployee(employeeID);
         return ResponseEntity.ok(profile);
     }
+
+
+    @GetMapping("/AllApprovedReq/{id}")
+    public ResponseEntity<List<AllApprovedReqFin>> getAllApprovedReq(@PathVariable Integer id){
+        try{
+            List<AllApprovedReqFin> resquest = financeService.allApprovedReq(id);
+            return ResponseEntity.ok(resquest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GetMapping("/AllRembursedReq/{id}")
+    public ResponseEntity<List<FinanceRemApproval>> getAllRemRequests(@PathVariable Integer id){
+        try{
+            List<FinanceRemApproval> result = financeService.getAllremReqs(id);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
 }

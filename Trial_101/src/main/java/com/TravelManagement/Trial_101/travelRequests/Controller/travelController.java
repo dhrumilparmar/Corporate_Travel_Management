@@ -1,8 +1,12 @@
 package com.TravelManagement.Trial_101.travelRequests.Controller;
 
+import com.TravelManagement.Trial_101.finance.DTO.AllApprovedReqFin;
+import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.ExpenseCreateRequest;
 import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.ExpenseRequestDTO;
 import com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO.TravelRequestDTO;
+import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.ExpenseResponse;
 import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.ExpenseResponseDTO;
+import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TravelRequestFinanceDTO;
 import com.TravelManagement.Trial_101.travelRequests.DTO.ResponseDTO.TravelRequestResponseDTO;
 import com.TravelManagement.Trial_101.travelRequests.Entity.TravelRequest;
 import com.TravelManagement.Trial_101.travelRequests.travelService.Service;
@@ -65,10 +69,9 @@ public class travelController {
     @PostMapping("/addExpense")
     public ResponseEntity<ExpenseResponseDTO> addExpense(@RequestBody ExpenseRequestDTO dto){
         try{
-            return ResponseEntity.ok(travelSvc.submitBills(dto));
+            return ResponseEntity.ok(travelSvc.addExpense(dto));
         } catch (Exception e) {
             e.printStackTrace();
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -83,4 +86,31 @@ public class travelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+    @GetMapping("/expenseList/{id}")
+    public ResponseEntity<List<TravelRequestFinanceDTO>> getAlltravelReqExpense(@PathVariable("id") Integer id){
+        try{
+            List<TravelRequestFinanceDTO> requests = travelSvc.getAllfinApproved(id);
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @PostMapping("/expenses")
+    public ResponseEntity<List<ExpenseResponse>> addExpenses(@RequestBody ExpenseCreateRequest request) {
+        try {
+            List<ExpenseResponse> response = travelSvc.saveExpenses(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
 }

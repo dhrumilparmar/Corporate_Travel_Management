@@ -1,8 +1,10 @@
 package com.TravelManagement.Trial_101.finance.Service.Impl;
 
 import com.TravelManagement.Trial_101.employee.Entity.Employee;
+import com.TravelManagement.Trial_101.finance.DTO.AllApprovedReqFin;
 import com.TravelManagement.Trial_101.finance.DTO.FinanceApprovalActionResponseDTO;
 import com.TravelManagement.Trial_101.finance.DTO.FinancePendingCardDTO;
+import com.TravelManagement.Trial_101.finance.DTO.FinanceRemApproval;
 import com.TravelManagement.Trial_101.finance.DTO.RequestDTO.FinanceApprovalActionRequestDTO;
 import com.TravelManagement.Trial_101.finance.Repository.financeRepo;
 import com.TravelManagement.Trial_101.finance.Repository.finance_approvalhistoryRepo;
@@ -18,7 +20,9 @@ import com.TravelManagement.Trial_101.employee.employeeRepository.employeeReposi
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class finanaceServiceImpl implements financeService {
@@ -34,6 +38,22 @@ public class finanaceServiceImpl implements financeService {
 
     @Autowired
     finance_approvalhistoryRepo finance_approvalRepo;
+    @Override
+    public List<FinanceRemApproval> getAllremReqs(Integer employeeid) {
+        // No mapping needed because repo already returns the DTO!
+        return financeRepo.getAllreqByStatus(employeeid);
+    }
+
+
+
+
+    @Override
+    public List<AllApprovedReqFin> allApprovedReq(Integer financeid) {
+        return finance_approvalRepo.getAllApprovedReq(financeid);
+    }
+
+
+
 
 
     @Override

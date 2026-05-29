@@ -1,4 +1,7 @@
 package com.TravelManagement.Trial_101.travelRequests.DTO.RequestDTO;
+import com.TravelManagement.Trial_101.employee.Entity.Employee;
+import com.TravelManagement.Trial_101.travelRequests.Entity.ExpenseCategory;
+import com.TravelManagement.Trial_101.travelRequests.Entity.TravelRequest;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -14,11 +17,12 @@ import java.time.LocalDateTime;
 @Builder
 public class ExpenseRequestDTO {
 
-    private Integer    travelReqID;
-    private Integer    employeeID;
-    private Integer    categoryID;
-    private String     description;
+    private Integer travelReqID; // Use Integer ID, NOT Entity
+    private Integer employeeID;
+    private Integer categoryID;
+    private String description;
     private BigDecimal amount;
-    private LocalDate  expenseDate;
-    private String     receiptFile;   // file path or URL
+    private LocalDate expenseDate;
+    private String receiptFile;
+
 }

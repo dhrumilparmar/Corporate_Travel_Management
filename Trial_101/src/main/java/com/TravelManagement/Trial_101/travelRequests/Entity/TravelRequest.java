@@ -48,7 +48,7 @@ public class TravelRequest {
     @Column(name = "status",
             columnDefinition = "ENUM('DRAFT','SUBMITTED','MANAGER_APPROVED'," +
                     "'FINANCE_APPROVED','MANAGER_REJECTED'," +
-                    "'FINANCE_REJECTED','CANCELLED') DEFAULT 'DRAFT'")
+                    "'FINANCE_REJECTED','CANCELLED','REM_PENDING') DEFAULT 'DRAFT'")
     private Status status = Status.DRAFT;
 
     @Column(name = "policyViolation", columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -95,6 +95,6 @@ public class TravelRequest {
     public enum Status {
         DRAFT, SUBMITTED, MANAGER_APPROVED,
         FINANCE_APPROVED, MANAGER_REJECTED,
-        FINANCE_REJECTED, CANCELLED
+        FINANCE_REJECTED, CANCELLED, REM_PENDING
     }
 }

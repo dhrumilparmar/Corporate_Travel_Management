@@ -84,11 +84,10 @@ public class managerController {
         }
 
 
-//
-//
+
+
     }
-//
-////
+
     @GetMapping("/{managerID}/pending-requests")
     public ResponseEntity<List<PendingRequestCardDTO>> findTravelRequestsByManager(@PathVariable("managerID") Integer managerID) {
         try {
