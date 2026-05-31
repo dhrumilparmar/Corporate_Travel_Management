@@ -1,9 +1,7 @@
 package com.TravelManagement.Trial_101.employee.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
@@ -17,9 +15,12 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_employee_manager",     columnList = "managerID"),
         }
 )
-@Data
+//@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Employee {
 
     @Id

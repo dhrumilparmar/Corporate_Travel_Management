@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -26,4 +27,5 @@ public class ApprovalHistoryResponseDTO {
     private String action;
     private String remarks;
     private LocalDateTime approvedDate;
+    private BigDecimal budget;
 }

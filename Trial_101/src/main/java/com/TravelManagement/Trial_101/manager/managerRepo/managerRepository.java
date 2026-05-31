@@ -57,9 +57,10 @@ public interface managerRepository extends JpaRepository<TravelRequest, Integer>
     );
 
     @Query(value = """
-    SELECT tr.travel_reqID,tr.request_code, tr.destination, tr.start_travel, tr.end_travel, tr.purpose, tr.status, e.full_name AS employeeName, ah.approval_level, ah.action, ah.remarks, ah.action_date AS approvedDate
+    SELECT tr.travel_reqID,tr.request_code, tr.destination, tr.start_travel, tr.end_travel, tr.purpose, tr.status, e.full_name AS employeeName, ah.approval_level, ah.action, ah.remarks, ah.action_date AS approvedDate, rb.total_budget AS budget
     FROM approval_history ah
     JOIN travel_request tr ON ah.travel_reqid = tr.travel_reqID
+    JOIN request_budget rb ON ah.travel_reqid = rb.travel_reqid
     JOIN employee e ON tr.employeeid = e.employeeID WHERE ah.approverid = :approverID AND ah.action = 'APPROVED' ORDER BY ah.action_date DESC
 """, nativeQuery = true)
     List<ApprovalHistoryResponseDTO> getAllApprovedReq(@Param("approverID") Integer approverID);
